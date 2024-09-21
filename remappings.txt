@@ -1,0 +1,6 @@
+@openzeppelin/=lib/openzeppelin-contracts/
+forge-std/=lib/forge-std/
+@tokenized-strategy/=lib/tokenized-strategy/src/
+@periphery/=lib/tokenized-strategy-periphery/src/
+swap-helpers/=lib/swap-helpers/
+mock-tokens/=lib/mock-tokens/
