@@ -5,10 +5,10 @@ import "forge-std/src/console2.sol";
 import { ExtendedTest } from "./ExtendedTest.sol";
 
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { CoinflakesEthStrategy } from "../../CoinflakesEthStrategy.sol";
+import { CoinflakesBtcStrategy } from "../../CoinflakesBtcStrategy.sol";
 import { IStrategyInterface } from "../../interfaces/IStrategyInterface.sol";
 
-import { ISwapHelper, UniswapV3Helper } from "swap-helpers/src/UniswapV3Helper.sol";
+import { UniswapV3Helper } from "swap-helpers/src/UniswapV3Helper.sol";
 
 import { IAggregator } from "swap-helpers/src/interfaces/chainlink/IAggregator.sol";
 

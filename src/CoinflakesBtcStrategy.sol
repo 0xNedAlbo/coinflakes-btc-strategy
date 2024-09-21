@@ -12,7 +12,7 @@ import { IAggregator } from "swap-helpers/src/interfaces/chainlink/IAggregator.s
 import { ISwapHelper } from "swap-helpers/src/interfaces/ISwapHelper.sol";
 import { Slippage } from "swap-helpers/src/utils/Slippage.sol";
 
-contract CoinflakesEthStrategy is BaseStrategy {
+contract CoinflakesBtcStrategy is BaseStrategy {
     using SafeERC20 for IERC20;
     using SafeERC20 for ERC20;
 

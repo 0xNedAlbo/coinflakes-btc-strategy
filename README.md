@@ -1,4 +1,4 @@
-# Tokenized ETH Strategy for Coinflakes DAO
+# Tokenized BTC Strategy for Coinflakes DAO
 
 This is an implementation of a Yearn V3 tokenized strategy.
 
@@ -10,4 +10,4 @@ For instructions see [https://github.com/yearn/tokenized-strategy](https://githu
 
 ## Strategy
 
-This strategy swaps the allocated funds for WETH through Curve. It uses a Chainlink oracle to check for deviations from the current ETH market price when performing swaps and reports as a safeguard.
+This strategy swaps the allocated funds for CBBTC (Coinbase BTC) through Uniswap V3. It uses a Chainlink oracle to check for deviations from the current BTC market price when performing swaps and reports as a safeguard.
