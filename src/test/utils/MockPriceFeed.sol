@@ -4,7 +4,7 @@ pragma solidity >=0.8.18;
 import { ISwapHelper } from "swap-helpers/src/interfaces/ISwapHelper.sol";
 import { IAggregator } from "swap-helpers/src/interfaces/chainlink/IAggregator.sol";
 
-contract MockDaiEthPriceFeed is IAggregator {
+contract MockPriceFeed is IAggregator {
     ISwapHelper public swap;
 
     int256 public latestAnswer;
@@ -23,15 +23,15 @@ contract MockDaiEthPriceFeed is IAggregator {
         latestTimestamp = block.timestamp;
     }
 
-    function latestRound() external pure override returns (uint256) {
+    function latestRound() external pure returns (uint256) {
         revert("not implemented");
     }
 
-    function getAnswer(uint256) external pure override returns (int256) {
+    function getAnswer(uint256) external pure returns (int256) {
         revert("not implemented");
     }
 
-    function getTimestamp(uint256) external pure override returns (uint256) {
+    function getTimestamp(uint256) external pure returns (uint256) {
         revert("not implemented");
     }
 

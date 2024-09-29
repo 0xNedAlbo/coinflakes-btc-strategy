@@ -12,8 +12,8 @@ import { UniswapV3Helper } from "swap-helpers/src/UniswapV3Helper.sol";
 
 import { IAggregator } from "swap-helpers/src/interfaces/chainlink/IAggregator.sol";
 
-import { MockDaiEthSwapHelper } from "./MockDaiEthSwapHelper.sol";
-import { MockDaiEthPriceFeed } from "./MockDaiEthPriceFeed.sol";
+import { MockSwapHelper } from "./MockSwapHelper.sol";
+import { MockPriceFeed } from "./MockPriceFeed.sol";
 
 // Inherit the events so they can be checked if desired.
 import { IEvents } from "@tokenized-strategy/interfaces/IEvents.sol";
@@ -30,8 +30,8 @@ contract Setup is ExtendedTest, IEvents {
     // Contract instances that we will use repeatedly.
     ERC20 public asset;
     IStrategyInterface public strategy;
-    MockDaiEthSwapHelper public swap;
-    MockDaiEthPriceFeed public priceFeed;
+    MockSwapHelper public swap;
+    MockPriceFeed public priceFeed;
 
     mapping(string => address) public tokenAddrs;
 
@@ -88,12 +88,12 @@ contract Setup is ExtendedTest, IEvents {
 
     function setUp_swapHelper() public {
         // DAI/ETH Pool on UniswapV3
-        swap = new MockDaiEthSwapHelper();
+        swap = new MockSwapHelper();
     }
 
     function setUp_priceFeed() public {
         // DAI/ETH price feed on Chainlink
-        priceFeed = new MockDaiEthPriceFeed(address(swap));
+        priceFeed = new MockPriceFeed(address(swap));
     }
 
     function setUpStrategy() public returns (address) {
@@ -101,7 +101,7 @@ contract Setup is ExtendedTest, IEvents {
         setUp_priceFeed();
         // we save the strategy as a IStrategyInterface to give it the needed interface
         IStrategyInterface _strategy =
-            IStrategyInterface(address(new CoinflakesEthStrategy(address(swap), address(priceFeed))));
+            IStrategyInterface(address(new CoinflakesBtcStrategy(address(swap), address(priceFeed))));
 
         // set keeper
         _strategy.setKeeper(keeper);
@@ -110,7 +110,7 @@ contract Setup is ExtendedTest, IEvents {
         // set management of the strategy
         _strategy.setPendingManagement(management);
         // set depositor
-        CoinflakesEthStrategy(address(_strategy)).allowDepositor(user);
+        CoinflakesBtcStrategy(address(_strategy)).allowDepositor(user);
 
         vm.prank(management);
         _strategy.acceptManagement();
@@ -139,6 +139,7 @@ contract Setup is ExtendedTest, IEvents {
         uint256 _totalIdle
     )
         public
+        view
     {
         uint256 _assets = _strategy.totalAssets();
         uint256 _balance = ERC20(_strategy.asset()).balanceOf(address(_strategy));
@@ -180,8 +181,8 @@ contract Setup is ExtendedTest, IEvents {
     }
 
     function simulateEthUp() public {
-        uint256 currentPrice = swap.ethPrice();
-        swap.setEthPrice(currentPrice + (currentPrice / 10));
+        uint256 currentPrice = swap.btcPrice();
+        swap.setBtcPrice(currentPrice + (currentPrice / 10));
         priceFeed.update();
     }
 }

@@ -6,7 +6,7 @@ import "forge-std/src/console2.sol";
 import { Setup, ERC20, IStrategyInterface } from "./utils/Setup.sol";
 import { Slippage } from "swap-helpers/src/utils/Slippage.sol";
 
-import { CoinflakesEthStrategy, IERC20 } from "../CoinflakesEthStrategy.sol";
+import { CoinflakesBtcStrategy, IERC20 } from "../CoinflakesBtcStrategy.sol";
 
 contract ShutdownTest is Setup {
     using Slippage for uint256;

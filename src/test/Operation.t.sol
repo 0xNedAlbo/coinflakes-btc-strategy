@@ -15,6 +15,7 @@ contract OperationTest is Setup {
         assertEq(strategy.performanceFeeRecipient(), performanceFeeRecipient);
         assertEq(strategy.keeper(), keeper);
         // TODO: add additional check on strat params
+        emit log_named_decimal_int("Asset price: ", priceFeed.latestAnswer(), priceFeed.decimals());
     }
 
     function test_operation(uint256 _amount) public {

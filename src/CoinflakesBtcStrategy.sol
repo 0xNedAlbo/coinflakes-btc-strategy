@@ -25,8 +25,8 @@ contract CoinflakesBtcStrategy is BaseStrategy {
     IAggregator public priceFeed;
     ISwapHelper public swap;
 
-    IERC20 public WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
-    int24 public maxSlippage = 1000; // BPS
+    IERC20 public CBBTC = IERC20(0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf);
+    int24 public maxSlippage = 100; // BPS
     uint256 public maxOracleDelay = 30 minutes;
 
     uint8 oracleDecimals;
@@ -53,7 +53,7 @@ contract CoinflakesBtcStrategy is BaseStrategy {
         address swapAddress,
         address priceFeedAddress
     )
-        BaseStrategy(0x6B175474E89094C44Da98b954EedeAC495271d0F, "Coinflakes Eth Strategy")
+        BaseStrategy(0x6B175474E89094C44Da98b954EedeAC495271d0F, "Coinflakes Btc Strategy")
     {
         swap = ISwapHelper(swapAddress);
         token0 = swap.token0();
@@ -84,23 +84,27 @@ contract CoinflakesBtcStrategy is BaseStrategy {
         int256 marketPrice = priceFeed.latestAnswer();
         require(marketPrice > 0, "invalid price from oracle");
         uint256 marketQuote = daiAmount * (10 ** oracleDecimals) / uint256(marketPrice);
-        uint256 wethBalance = WETH.balanceOf(address(this));
-        uint256 wethAmountMax = marketQuote.applySlippage(maxSlippage);
-        if (wethAmountMax > wethBalance) wethAmountMax = wethBalance;
-        WETH.approve(address(swap), wethAmountMax);
+        uint256 cbbtcBalance = CBBTC.balanceOf(address(this));
+        uint256 cbbtcAmountMax = marketQuote.applySlippage(maxSlippage);
+        if (cbbtcAmountMax > cbbtcBalance) cbbtcAmountMax = cbbtcBalance;
+        CBBTC.approve(address(swap), cbbtcAmountMax);
         if (token0 == address(asset)) {
-            swap.buyToken0(daiAmount, wethAmountMax, address(this));
+            swap.buyToken0(daiAmount, cbbtcAmountMax, address(this));
         } else {
-            swap.buyToken1(daiAmount, wethAmountMax, address(this));
+            swap.buyToken1(daiAmount, cbbtcAmountMax, address(this));
         }
     }
 
     function _harvestAndReport() internal override returns (uint256 _totalAssets) {
         int256 marketPrice = priceFeed.latestAnswer();
         require(marketPrice > 0, "invalid price from oracle");
-        uint256 wethBalance = WETH.balanceOf(address(this));
-        uint256 marketQuote = wethBalance * uint256(marketPrice) / (10 ** oracleDecimals);
-        _totalAssets = swap.previewSellToken1(wethBalance);
+        uint256 cbbtcBalance = CBBTC.balanceOf(address(this));
+        uint256 marketQuote = cbbtcBalance * uint256(marketPrice) / (10 ** oracleDecimals);
+        if (swap.token0() == address(CBBTC)) {
+            _totalAssets = swap.previewSellToken0(cbbtcBalance);
+        } else {
+            _totalAssets = swap.previewSellToken1(cbbtcBalance);
+        }
         int24 slippage = marketQuote.slippage(_totalAssets);
         require(slippage > -maxSlippage, "oracle deviation");
         _totalAssets += asset.balanceOf(address(this));
@@ -112,11 +116,20 @@ contract CoinflakesBtcStrategy is BaseStrategy {
     }
 
     function _emergencyWithdraw(uint256 _amount) internal virtual override {
-        uint256 wethBalance = WETH.balanceOf(address(this));
-        uint256 wethRequired = swap.previewBuyToken0(_amount).applySlippage(maxSlippage);
-        if (wethBalance < wethRequired) wethRequired = wethBalance;
-        WETH.approve(address(swap), wethRequired);
-        swap.buyToken0(_amount, wethRequired, address(this));
+        uint256 cbbtcBalance = CBBTC.balanceOf(address(this));
+        uint256 cbbtcRequired;
+        if (token0 == address(asset)) {
+            cbbtcRequired = swap.previewBuyToken0(_amount).applySlippage(maxSlippage);
+        } else {
+            cbbtcRequired = swap.previewBuyToken1(_amount).applySlippage(maxSlippage);
+        }
+        if (cbbtcBalance < cbbtcRequired) cbbtcRequired = cbbtcBalance;
+        CBBTC.approve(address(swap), cbbtcRequired);
+        if (token0 == address(asset)) {
+            swap.buyToken0(_amount, cbbtcRequired, address(this));
+        } else {
+            swap.buyToken1(_amount, cbbtcRequired, address(this));
+        }
     }
 
     function changeSwap(address newSwap) public onlyManagement {

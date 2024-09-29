@@ -6,7 +6,7 @@ import "forge-std/src/console2.sol";
 import { Setup, ERC20, IStrategyInterface } from "./utils/Setup.sol";
 import { Slippage } from "swap-helpers/src/utils/Slippage.sol";
 
-import { CoinflakesEthStrategy, IERC20 } from "../CoinflakesEthStrategy.sol";
+import { CoinflakesBtcStrategy, IERC20 } from "../CoinflakesBtcStrategy.sol";
 
 contract ShutdownTest is Setup {
     using Slippage for uint256;
@@ -61,9 +61,9 @@ contract ShutdownTest is Setup {
         vm.prank(management);
         strategy.shutdownStrategy();
 
-        IERC20 weth = CoinflakesEthStrategy(address(strategy)).WETH();
-        uint256 wethBalance = weth.balanceOf(address(strategy));
-        require(wethBalance > 0, "!weth balance");
+        IERC20 cbbtc = CoinflakesBtcStrategy(address(strategy)).CBBTC();
+        uint256 cbbtcBalance = cbbtc.balanceOf(address(strategy));
+        require(cbbtcBalance > 0, "!weth balance");
         uint256 assetBalance = IERC20(strategy.asset()).balanceOf(address(strategy));
         require(assetBalance == 0, "!unspent assets");
         vm.prank(management);

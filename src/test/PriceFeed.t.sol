@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 
 import { Setup } from "./utils/Setup.sol";
-import { CoinflakesEthStrategy } from "../CoinflakesEthStrategy.sol";
+import { CoinflakesBtcStrategy } from "../CoinflakesBtcStrategy.sol";
 
 contract PriceFeedTest is Setup {
     function setUp() public virtual override {
@@ -11,7 +11,7 @@ contract PriceFeedTest is Setup {
 
     function test_priceFeedIsBehind() public {
         priceFeed.update();
-        skip(CoinflakesEthStrategy(address(strategy)).maxOracleDelay() + 1 minutes);
+        skip(CoinflakesBtcStrategy(address(strategy)).maxOracleDelay() + 1 minutes);
         airdrop(asset, user, 10_000 ether);
 
         vm.prank(user);
@@ -33,7 +33,7 @@ contract PriceFeedTest is Setup {
         asset.approve(address(strategy), daiAmount);
 
         vm.startPrank(management);
-        CoinflakesEthStrategy(address(strategy)).setMaxSlippage(4999);
+        CoinflakesBtcStrategy(address(strategy)).setMaxSlippage(4999);
         priceFeed.setLatestAnswer(price / 2);
         vm.stopPrank();
 
@@ -48,7 +48,7 @@ contract PriceFeedTest is Setup {
         mintAndDepositIntoStrategy(strategy, user, daiAmount);
 
         vm.startPrank(management);
-        CoinflakesEthStrategy(address(strategy)).setMaxSlippage(4999);
+        CoinflakesBtcStrategy(address(strategy)).setMaxSlippage(4999);
         priceFeed.setLatestAnswer(priceFeed.latestAnswer() * 2);
         vm.stopPrank();
 
@@ -63,7 +63,7 @@ contract PriceFeedTest is Setup {
         mintAndDepositIntoStrategy(strategy, user, daiAmount);
 
         vm.startPrank(management);
-        CoinflakesEthStrategy(address(strategy)).setMaxSlippage(4999);
+        CoinflakesBtcStrategy(address(strategy)).setMaxSlippage(4999);
         priceFeed.setLatestAnswer(priceFeed.latestAnswer() * 2);
         vm.stopPrank();
 
