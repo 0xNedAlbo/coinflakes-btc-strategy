@@ -10,7 +10,8 @@ contract PriceFeedTest is Setup {
     }
 
     function test_priceFeedIsBehind() public {
-        priceFeed.update();
+        priceFeed.setLatestTimestamp(block.timestamp);
+
         skip(CoinflakesBtcStrategy(address(strategy)).maxOracleDelay() + 1 minutes);
         airdrop(asset, user, 10_000 ether);
 
@@ -23,9 +24,9 @@ contract PriceFeedTest is Setup {
     }
 
     function test_priceFeedDifferenceOnDeposits() public {
-        priceFeed.update();
+        priceFeed.setLatestTimestamp(block.timestamp);
         int256 price = priceFeed.latestAnswer();
-        uint256 daiAmount = uint256(price) * 10 ** 10;
+        uint256 daiAmount = 10_000 ether;
 
         airdrop(asset, user, daiAmount);
 
@@ -34,7 +35,7 @@ contract PriceFeedTest is Setup {
 
         vm.startPrank(management);
         CoinflakesBtcStrategy(address(strategy)).setMaxSlippage(4999);
-        priceFeed.setLatestAnswer(price / 2);
+        priceFeed.update(price / 2);
         vm.stopPrank();
 
         vm.expectRevert(bytes("slippage"));
@@ -43,7 +44,7 @@ contract PriceFeedTest is Setup {
     }
 
     function test_priceFeedDifferenceOnReports() public {
-        priceFeed.update();
+        priceFeed.setLatestTimestamp(block.timestamp);
         uint256 daiAmount = 10_000 ether;
         mintAndDepositIntoStrategy(strategy, user, daiAmount);
 
@@ -58,7 +59,7 @@ contract PriceFeedTest is Setup {
     }
 
     function test_priceFeedDifferenceOnWithdraws() public {
-        priceFeed.update();
+        priceFeed.setLatestTimestamp(block.timestamp);
         uint256 daiAmount = 10_000 ether;
         mintAndDepositIntoStrategy(strategy, user, daiAmount);
 

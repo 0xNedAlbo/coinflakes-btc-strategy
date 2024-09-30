@@ -28,7 +28,7 @@ contract OperationTest is Setup {
 
         // Earn Interest
         skip(1 days);
-        simulateEthUp();
+        simulatePriceChange(1000);
 
         // Report profit
         vm.prank(keeper);
@@ -38,7 +38,7 @@ contract OperationTest is Setup {
         assertEq(loss, 0, "!loss");
 
         skip(strategy.profitMaxUnlockTime());
-        priceFeed.update();
+        priceFeed.setLatestTimestamp(block.timestamp);
 
         uint256 balanceBefore = asset.balanceOf(user);
 
@@ -60,7 +60,7 @@ contract OperationTest is Setup {
 
         // Earn Interest
         skip(1 days);
-        simulateEthUp();
+        simulatePriceChange(1000);
 
         // Report profit
         vm.prank(keeper);
@@ -71,7 +71,7 @@ contract OperationTest is Setup {
         assertEq(loss, 0, "!loss");
 
         skip(strategy.profitMaxUnlockTime());
-        priceFeed.update();
+        priceFeed.setLatestTimestamp(block.timestamp);
 
         uint256 balanceBefore = asset.balanceOf(user);
 
@@ -95,7 +95,7 @@ contract OperationTest is Setup {
 
         // Earn Interest
         skip(1 days);
-        simulateEthUp();
+        simulatePriceChange(1000);
 
         // Report profit
         vm.prank(keeper);
@@ -106,7 +106,7 @@ contract OperationTest is Setup {
         assertEq(loss, 0, "!loss");
 
         skip(strategy.profitMaxUnlockTime());
-        priceFeed.update();
+        priceFeed.setLatestTimestamp(block.timestamp);
 
         // Get the expected fee
         uint256 expectedShares = (profit * 1000) / MAX_BPS;
@@ -143,7 +143,7 @@ contract OperationTest is Setup {
 
         // Skip some time
         skip(1 days);
-        priceFeed.update();
+        priceFeed.setLatestTimestamp(block.timestamp);
 
         (trigger,) = strategy.tendTrigger();
         assertTrue(!trigger);
@@ -156,7 +156,7 @@ contract OperationTest is Setup {
 
         // Unlock Profits
         skip(strategy.profitMaxUnlockTime());
-        priceFeed.update();
+        priceFeed.update(priceFeed.latestAnswer());
 
         (trigger,) = strategy.tendTrigger();
         assertTrue(!trigger);

@@ -7,19 +7,21 @@ import { IAggregator } from "swap-helpers/src/interfaces/chainlink/IAggregator.s
 contract MockPriceFeed is IAggregator {
     ISwapHelper public swap;
 
+    IAggregator immutable origin;
     int256 public latestAnswer;
     uint256 public latestTimestamp;
 
-    uint8 public decimals = 8;
+    uint8 public decimals;
 
-    constructor(address swapAddress) {
-        swap = ISwapHelper(swapAddress);
-        latestAnswer = int256(swap.previewBuyToken1(1 ether) / 10 ** 10);
+    constructor(address originAddress) {
+        origin = IAggregator(originAddress);
+        latestAnswer = origin.latestAnswer();
         latestTimestamp = block.timestamp;
+        decimals = origin.decimals();
     }
 
-    function update() external {
-        latestAnswer = int256(swap.previewBuyToken1(1 ether) / 10 ** 10);
+    function update(int256 newPrice) external {
+        latestAnswer = newPrice;
         latestTimestamp = block.timestamp;
     }
 

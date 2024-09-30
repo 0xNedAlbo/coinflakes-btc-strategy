@@ -25,7 +25,7 @@ contract ShutdownTest is Setup {
 
         // Earn Interest
         skip(1 days);
-        simulateEthUp();
+        simulatePriceChange(1000);
 
         // Shutdown the strategy
         vm.prank(management);
@@ -55,7 +55,7 @@ contract ShutdownTest is Setup {
         // If eth is up, there should be more WETH
         // than before.
         skip(1 days);
-        simulateEthUp();
+        simulatePriceChange(1000);
 
         // Shutdown
         vm.prank(management);

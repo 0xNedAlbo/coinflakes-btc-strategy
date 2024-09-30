@@ -30,6 +30,8 @@ contract Setup is ExtendedTest, IEvents {
     // Contract instances that we will use repeatedly.
     ERC20 public asset;
     IStrategyInterface public strategy;
+
+    address public constant CHAINLINK_FEED = 0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c; // BTC/USD
     MockSwapHelper public swap;
     MockPriceFeed public priceFeed;
 
@@ -86,19 +88,22 @@ contract Setup is ExtendedTest, IEvents {
         vm.createSelectFork(url, blockNumber);
     }
 
-    function setUp_swapHelper() public {
-        // DAI/ETH Pool on UniswapV3
-        swap = new MockSwapHelper();
+    function setUp_priceFeed() public virtual {
+        // DAI/ETH price feed on Chainlink
+        priceFeed = new MockPriceFeed(CHAINLINK_FEED);
+        require(priceFeed.latestAnswer() > 0, "oracle price negative or zero");
     }
 
-    function setUp_priceFeed() public {
-        // DAI/ETH price feed on Chainlink
-        priceFeed = new MockPriceFeed(address(swap));
+    function setUp_swapHelper() public virtual {
+        require(address(priceFeed) != address(0x0), "price feed not setup");
+        swap = new MockSwapHelper();
+        swap.setPrice(uint256(priceFeed.latestAnswer()));
+        swap.setPriceDecimals(priceFeed.decimals());
     }
 
     function setUpStrategy() public returns (address) {
-        setUp_swapHelper();
         setUp_priceFeed();
+        setUp_swapHelper();
         // we save the strategy as a IStrategyInterface to give it the needed interface
         IStrategyInterface _strategy =
             IStrategyInterface(address(new CoinflakesBtcStrategy(address(swap), address(priceFeed))));
@@ -171,18 +176,17 @@ contract Setup is ExtendedTest, IEvents {
     }
 
     function _setTokenAddrs() internal {
-        tokenAddrs["WBTC"] = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
-        tokenAddrs["YFI"] = 0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e;
         tokenAddrs["WETH"] = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-        tokenAddrs["LINK"] = 0x514910771AF9Ca656af840dff83E8264EcF986CA;
         tokenAddrs["USDT"] = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
         tokenAddrs["DAI"] = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
         tokenAddrs["USDC"] = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     }
 
-    function simulateEthUp() public {
-        uint256 currentPrice = swap.btcPrice();
-        swap.setBtcPrice(currentPrice + (currentPrice / 10));
-        priceFeed.update();
+    function simulatePriceChange(int24 bps) public {
+        if (bps < -10_000) revert("negative bps more than negative max");
+        int256 currentPrice = int256(swap.price());
+        currentPrice += currentPrice * 10_000 / bps;
+        swap.setPrice(uint256(currentPrice));
+        priceFeed.update(int256(currentPrice));
     }
 }
