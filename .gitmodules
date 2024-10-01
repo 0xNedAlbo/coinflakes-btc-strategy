@@ -14,10 +14,6 @@
 	path = lib/tokenized-strategy
 	url = https://github.com/yearn/tokenized-strategy
 	branch = v3.0.2-1
-[submodule "lib/swap-helpers"]
-	path = lib/swap-helpers
-	url = https://github.com/0xNedAlbo/swap-helpers
-	branch = v0.1.0
 [submodule "lib/mock-tokens"]
 	path = lib/mock-tokens
 	url = https://github.com/0xNedAlbo/mock-tokens
