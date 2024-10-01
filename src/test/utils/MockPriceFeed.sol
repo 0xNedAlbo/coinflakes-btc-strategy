@@ -20,20 +20,24 @@ contract MockPriceFeed is IAggregator {
         decimals = origin.decimals();
     }
 
-    function update(int256 newPrice) external {
+    function update() public {
+        latestTimestamp = block.timestamp;
+    }
+
+    function update(int256 newPrice) public {
         latestAnswer = newPrice;
         latestTimestamp = block.timestamp;
     }
 
-    function latestRound() external pure returns (uint256) {
+    function latestRound() public pure returns (uint256) {
         revert("not implemented");
     }
 
-    function getAnswer(uint256) external pure returns (int256) {
+    function getAnswer(uint256) public pure returns (int256) {
         revert("not implemented");
     }
 
-    function getTimestamp(uint256) external pure returns (uint256) {
+    function getTimestamp(uint256) public pure returns (uint256) {
         revert("not implemented");
     }
 
@@ -43,5 +47,10 @@ contract MockPriceFeed is IAggregator {
 
     function setLatestTimestamp(uint256 newTimestamp) public {
         latestTimestamp = newTimestamp;
+    }
+
+    function resetOrigin() public {
+        latestAnswer = origin.latestAnswer();
+        latestTimestamp = origin.latestTimestamp();
     }
 }

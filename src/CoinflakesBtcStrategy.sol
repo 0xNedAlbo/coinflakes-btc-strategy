@@ -113,7 +113,7 @@ contract CoinflakesBtcStrategy is BaseStrategy {
         }
         uint256 cbbtcBalance = CBBTC.balanceOf(address(this));
         uint256 cbbtcAmountMax = marketQuote.applySlippage(maxSlippage);
-        if (cbbtcAmountMax <= cbbtcBalance) {
+        if (cbbtcAmountMax < cbbtcBalance) {
             // CBBBTC value is enough to pay out.
             CBBTC.approve(address(swap), cbbtcAmountMax);
             if (token0 == address(asset)) {
@@ -134,19 +134,14 @@ contract CoinflakesBtcStrategy is BaseStrategy {
     }
 
     function _harvestAndReport() internal override returns (uint256 _totalAssets) {
-        int256 marketPrice = oracle.latestAnswer();
-        require(marketPrice > 0, "invalid price from oracle");
         uint256 cbbtcBalance = CBBTC.balanceOf(address(this));
-        uint256 marketQuote = cbbtcBalance * uint256(marketPrice) / (10 ** oracleDecimals);
-        if (token0 == address(asset)) {
-            marketQuote = marketQuote.mulDiv(10 ** token0Decimals, 10 ** token1Decimals);
-            _totalAssets = swap.previewSellToken1(cbbtcBalance);
-        } else {
-            marketQuote = marketQuote.mulDiv(10 ** token1Decimals, 10 ** token0Decimals);
-            _totalAssets = swap.previewSellToken0(cbbtcBalance);
+        if (cbbtcBalance > 0) {
+            if (token0 == address(asset)) {
+                _totalAssets = swap.previewSellToken1(cbbtcBalance);
+            } else {
+                _totalAssets = swap.previewSellToken0(cbbtcBalance);
+            }
         }
-        int24 slippage = marketQuote.slippage(_totalAssets);
-        require(slippage > -maxSlippage, "oracle deviation");
         _totalAssets += asset.balanceOf(address(this));
     }
 
@@ -163,12 +158,20 @@ contract CoinflakesBtcStrategy is BaseStrategy {
         } else {
             cbbtcRequired = swap.previewBuyToken1(_amount).applySlippage(maxSlippage);
         }
-        if (cbbtcBalance < cbbtcRequired) cbbtcRequired = cbbtcBalance;
-        CBBTC.approve(address(swap), cbbtcRequired);
-        if (token0 == address(asset)) {
-            swap.buyToken0(_amount, cbbtcRequired, address(this));
+        if (cbbtcRequired < cbbtcBalance) {
+            CBBTC.approve(address(swap), cbbtcRequired);
+            if (token0 == address(asset)) {
+                swap.buyToken0(_amount, cbbtcRequired, address(this));
+            } else {
+                swap.buyToken1(_amount, cbbtcRequired, address(this));
+            }
         } else {
-            swap.buyToken1(_amount, cbbtcRequired, address(this));
+            CBBTC.approve(address(swap), cbbtcBalance);
+            if (token0 == address(CBBTC)) {
+                swap.sellToken0(cbbtcBalance, 0, address(this));
+            } else {
+                swap.sellToken1(cbbtcBalance, 0, address(this));
+            }
         }
     }
 
