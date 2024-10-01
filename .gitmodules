@@ -17,3 +17,6 @@
 [submodule "lib/mock-tokens"]
 	path = lib/mock-tokens
 	url = https://github.com/0xNedAlbo/mock-tokens
+[submodule "lib/swap-helpers"]
+	path = lib/swap-helpers
+	url = https://github.com/0xNedAlbo/swap-helpers
