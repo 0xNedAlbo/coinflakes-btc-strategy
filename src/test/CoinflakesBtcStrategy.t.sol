@@ -48,7 +48,8 @@ contract CoinflakesBtcStrategyTest is Test {
     function setUp_priceFeed() internal virtual {
         // DAI/ETH price feed on Chainlink
         priceFeed = new MockPriceFeed(CHAINLINK_FEED);
-        require(priceFeed.latestAnswer() > 0, "oracle price negative or zero");
+        (, int256 latestAnswer,,,) = priceFeed.latestRoundData();
+        require(latestAnswer > 0, "oracle price negative or zero");
     }
 
     function setUp_swapHelper() internal virtual {

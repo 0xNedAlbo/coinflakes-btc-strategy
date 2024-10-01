@@ -8,14 +8,14 @@ contract MockPriceFeed is IAggregator {
     ISwapHelper public swap;
 
     IAggregator immutable origin;
-    int256 public latestAnswer;
-    uint256 public latestTimestamp;
+    int256 private latestAnswer;
+    uint256 private latestTimestamp;
 
     uint8 public decimals;
 
     constructor(address originAddress) {
         origin = IAggregator(originAddress);
-        latestAnswer = origin.latestAnswer();
+        (, latestAnswer,, latestTimestamp,) = origin.latestRoundData();
         latestTimestamp = block.timestamp;
         decimals = origin.decimals();
     }
@@ -37,10 +37,6 @@ contract MockPriceFeed is IAggregator {
         revert("not implemented");
     }
 
-    function getTimestamp(uint256) public pure returns (uint256) {
-        revert("not implemented");
-    }
-
     function setLatestAnswer(int256 newAnswer) public {
         latestAnswer = newAnswer;
     }
@@ -50,7 +46,31 @@ contract MockPriceFeed is IAggregator {
     }
 
     function resetOrigin() public {
-        latestAnswer = origin.latestAnswer();
-        latestTimestamp = origin.latestTimestamp();
+        (, latestAnswer,, latestTimestamp,) = origin.latestRoundData();
+    }
+
+    function description() external pure override returns (string memory) {
+        revert("not implemented");
+    }
+
+    function version() external pure override returns (uint256) {
+        revert("not implemented");
+    }
+
+    function getRoundData(uint80) external pure override returns (uint80, int256, uint256, uint256, uint80) {
+        revert("not implemented");
+    }
+
+    function latestRoundData()
+        external
+        view
+        override
+        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
+    {
+        roundId = 0;
+        answer = latestAnswer;
+        startedAt = 0;
+        updatedAt = latestTimestamp;
+        answeredInRound = 0;
     }
 }

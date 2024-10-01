@@ -28,8 +28,10 @@ contract CoinflakesBtcStrategy is BaseStrategy {
     uint256 public constant MAX_BPS = 10_000; // 100 Percent
 
     IAggregator public oracle;
-    uint8 oracleDecimals;
     uint256 public maxOracleDelay = 60 minutes;
+    uint8 private oracleDecimals;
+    int256 private latestOracleAnswer;
+    uint256 private latestOracleTimestamp;
 
     address public immutable vault;
 
@@ -53,7 +55,8 @@ contract CoinflakesBtcStrategy is BaseStrategy {
     event DisallowDepositor(address indexed depositor);
 
     modifier withOracleSynced() {
-        require(oracle.latestTimestamp() > block.timestamp - maxOracleDelay, "oracle out of date");
+        (, latestOracleAnswer,, latestOracleTimestamp,) = oracle.latestRoundData();
+        require(latestOracleTimestamp > block.timestamp - maxOracleDelay, "oracle out of date");
         _;
     }
 
@@ -86,9 +89,8 @@ contract CoinflakesBtcStrategy is BaseStrategy {
 
     function _deployFunds(uint256 daiAmount) internal override withOracleSynced {
         // Get a market quote from price feed
-        int256 marketPrice = oracle.latestAnswer();
-        require(marketPrice > 0, "invalid price from oracle");
-        uint256 marketQuote = daiAmount.mulDiv(10 ** oracleDecimals, uint256(marketPrice));
+        require(latestOracleAnswer > 0, "invalid price from oracle");
+        uint256 marketQuote = daiAmount.mulDiv(10 ** oracleDecimals, uint256(latestOracleAnswer));
         // Swap tokens, apply slippage to market quote
         asset.approve(address(swap), daiAmount);
         if (token0 == address(asset)) {
@@ -103,9 +105,8 @@ contract CoinflakesBtcStrategy is BaseStrategy {
     }
 
     function _freeFunds(uint256 daiAmount) internal override withOracleSynced {
-        int256 marketPrice = oracle.latestAnswer();
-        require(marketPrice > 0, "invalid price from oracle");
-        uint256 marketQuote = daiAmount * (10 ** oracleDecimals) / uint256(marketPrice);
+        require(latestOracleAnswer > 0, "invalid price from oracle");
+        uint256 marketQuote = daiAmount * (10 ** oracleDecimals) / uint256(latestOracleAnswer);
         if (token0 == address(asset)) {
             marketQuote = marketQuote.mulDiv(10 ** token1Decimals, 10 ** token0Decimals);
         } else {
