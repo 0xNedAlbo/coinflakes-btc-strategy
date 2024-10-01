@@ -20,3 +20,4 @@
 [submodule "lib/swap-helpers"]
 	path = lib/swap-helpers
 	url = https://github.com/0xNedAlbo/swap-helpers
+	branch = v0.3.0
